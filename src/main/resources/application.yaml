@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: Car4U
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
+
+app:
+  mongodb:
+    uri: ${MONGO_URL}
+  jwt:
+    signer-key: ${JWT_SIGNER_KEY}
+
+
