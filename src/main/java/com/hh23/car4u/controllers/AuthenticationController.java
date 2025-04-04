@@ -10,11 +10,15 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationController {
     AuthenticationService authenticationService;
@@ -33,6 +37,51 @@ public class AuthenticationController {
         var response = authenticationService.login(request);
         return ApiResponse.<AuthenticationResponse>builder()
                 .message("User logged in successfully")
+                .data(response)
+                .build();
+    }
+
+    @GetMapping("/social-login")
+    ApiResponse<String> socialLogin(@RequestParam String provider) {
+        log.info("Social login request received");
+        provider = provider.trim().toLowerCase();
+        String url = authenticationService.generateSocialAuthenticationURL(provider);
+        return ApiResponse.<String>builder()
+                .message("User request login with "+ provider)
+                .data(url)
+                .build();
+    }
+
+    @GetMapping("/social-login/callback")
+    ApiResponse<AuthenticationResponse> socialCallback(@RequestParam String provider, @RequestParam String code) throws Exception {
+        log.info("Social callback request received", provider, code);
+        provider = provider.trim().toLowerCase();
+        Map<String, Object> userInfo = authenticationService.authenticationAndFetchProfile(provider, code);
+        if (userInfo == null) {
+            return ApiResponse.<AuthenticationResponse>builder()
+                    .message("User not found")
+                    .data(null)
+                    .build();
+        }
+        String email = (String) userInfo.get("email");
+        String name = (String) userInfo.get("name");
+        String avatar = (String) userInfo.get("picture");
+        String googleAccountId = (String) userInfo.get("sub");
+
+        LoginSocialRequest request = LoginSocialRequest.builder()
+                .email(email)
+                .name(name)
+                .avatar(avatar)
+                .googleAccountId(googleAccountId)
+                .gender("")
+                .phone("")
+                .dob(null)
+                .build();
+
+        AuthenticationResponse response = authenticationService.loginSocial(request);
+
+        return ApiResponse.<AuthenticationResponse>builder()
+                .message("User logged in successfully with "+ provider)
                 .data(response)
                 .build();
     }

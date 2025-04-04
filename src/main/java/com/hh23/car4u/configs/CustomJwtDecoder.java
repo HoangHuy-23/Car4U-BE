@@ -36,10 +36,14 @@ public class CustomJwtDecoder implements JwtDecoder {
             if (!signedJWT.verify(jwsVerifier)) {
                 throw new JwtException("Token verification failed");
             }
+            if (!signedJWT.getJWTClaimsSet().getStringClaim("type").equals("access_token")) {
+                throw new AppException(ErrorCode.UNAUTHENTICATED);
+            }
             Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
             if (expirationTime == null || expirationTime.before(new Date())) {
                 throw new AppException(ErrorCode.UNAUTHENTICATED);
             }
+            String email = signedJWT.getJWTClaimsSet().getStringClaim("email");
             return new Jwt(token,
                     signedJWT.getJWTClaimsSet().getIssueTime().toInstant(),
                     signedJWT.getJWTClaimsSet().getExpirationTime().toInstant(),

@@ -28,10 +28,13 @@ public class User {
     String phone;
     String password;
     List<String> roles;
+    String gender;
     Double rating;
     String avatar;
     Integer numOfTrips;
     boolean isActive;
+    String googleAccountId;
+    String facebookAccountId;
     @CreatedDate
     @Setter(AccessLevel.NONE)
     Instant createdAt;
