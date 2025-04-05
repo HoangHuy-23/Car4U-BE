@@ -18,5 +18,5 @@ public interface AuthenticationService {
     UserResponse getMyProfile();
     String generateSocialAuthenticationURL(String provider);
     Map<String, Object> authenticationAndFetchProfile(String provider, String code) throws JsonProcessingException;
-    AuthenticationResponse loginSocial(LoginSocialRequest request) throws Exception;
+    AuthenticationResponse loginSocial(LoginSocialRequest request, String provider) throws Exception;
 }

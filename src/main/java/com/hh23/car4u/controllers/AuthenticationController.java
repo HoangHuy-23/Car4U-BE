@@ -67,24 +67,27 @@ public class AuthenticationController {
         String name = (String) userInfo.get("name");
         String avatar = (String) userInfo.get("picture");
         String googleAccountId = (String) userInfo.get("sub");
+        String facebookAccountId = (String) userInfo.get("id");
 
         LoginSocialRequest request = LoginSocialRequest.builder()
                 .email(email)
                 .name(name)
                 .avatar(avatar)
-                .googleAccountId(googleAccountId)
+                .googleAccountId(googleAccountId == null ? "" : googleAccountId)
+                .facebookAccountId(facebookAccountId == null ? "" : facebookAccountId)
                 .gender("")
                 .phone("")
                 .dob(null)
                 .build();
 
-        AuthenticationResponse response = authenticationService.loginSocial(request);
+        AuthenticationResponse response = authenticationService.loginSocial(request, provider);
 
         return ApiResponse.<AuthenticationResponse>builder()
                 .message("User logged in successfully with "+ provider)
                 .data(response)
                 .build();
     }
+
 
     @PostMapping("/refresh-token")
     ApiResponse<AuthenticationResponse> refreshToken(@RequestBody @Valid RefreshTokenRequest request) throws Exception {

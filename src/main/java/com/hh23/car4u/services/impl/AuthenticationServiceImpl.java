@@ -65,6 +65,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
     protected String googleRedirectUri;
 
+    @NonFinal
+    @Value("${spring.security.oauth2.client.registration.facebook.client-id}")
+    protected  String facebookClientId;
+
+    @NonFinal
+    @Value("${spring.security.oauth2.client.registration.facebook.client-secret}")
+    protected String facebookClientSecret;
+
+    @NonFinal
+    @Value("${spring.security.oauth2.client.registration.facebook.redirect-uri}")
+    protected String facebookRedirectUri;
 
     @Override
     public IntrospectResponse introspect(IntrospectRequest request) {
@@ -198,6 +209,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     "&redirect_uri=" + googleRedirectUri +
                     "&response_type=code&scope=openid%20email%20profile";
         }
+        if (provider.equals("facebook")) {
+            return "https://www.facebook.com/v22/dialog/oauth?client_id=" + facebookClientId +
+                    "&redirect_uri=" + facebookRedirectUri +
+                    "&response_type=code&scope=email,public_profile";
+        }
         return "";
     }
 
@@ -206,9 +222,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         RestTemplate restTemplate = new RestTemplate();
         ObjectMapper objectMapper = new ObjectMapper();
         String accessToken;
-        if (provider.toLowerCase().equals("google")) {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        if (provider.toLowerCase().equals("google")) {
             MultiValueMap<String, String> tokenParams = getTokenParams(code);
 
             HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(tokenParams, headers);
@@ -216,18 +232,31 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             Map<String, Object> tokenMap = objectMapper.readValue(tokenResponse.getBody(), Map.class);
             validateTokenResponse(tokenMap);
             accessToken = (String) tokenMap.get("access_token");
-            ResponseEntity<String> tokenInfoResponse = restTemplate.getForEntity(
-                    "https://oauth2.googleapis.com/tokeninfo?access_token=" + accessToken,
-                    String.class
-            );
-
-            if (accessToken == null) {
-                throw new AppException(ErrorCode.UNAUTHENTICATED);
-            }
             HttpHeaders userInfoHeaders = new HttpHeaders();
             userInfoHeaders.setBearerAuth(accessToken);
             ResponseEntity<String> userInfoResponse = restTemplate.exchange(
                     "https://www.googleapis.com/oauth2/v3/userinfo",
+                    HttpMethod.GET,
+                    new HttpEntity<>(userInfoHeaders),
+                    String.class
+            );
+            Map<String, Object> userInfoMap = objectMapper.readValue(userInfoResponse.getBody(), Map.class);
+            if (userInfoMap.containsKey("error")) {
+                throw new AppException(ErrorCode.UNAUTHENTICATED);
+            }
+            return userInfoMap;
+        }
+        if (provider.toLowerCase().equals("facebook")) {
+            MultiValueMap<String, String> tokenParams = getFacebookTokenParams(code);
+            HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(tokenParams, headers);
+            ResponseEntity<String> tokenResponse = restTemplate.postForEntity("https://graph.facebook.com/v22.0/oauth/access_token", tokenRequest, String.class);
+            Map<String, Object> tokenMap = objectMapper.readValue(tokenResponse.getBody(), Map.class);
+            validateTokenResponse(tokenMap);
+            accessToken = (String) tokenMap.get("access_token");
+            HttpHeaders userInfoHeaders = new HttpHeaders();
+            userInfoHeaders.setBearerAuth(accessToken);
+            ResponseEntity<String> userInfoResponse = restTemplate.exchange(
+                    "https://graph.facebook.com/me?fields=id,name,email,picture,type(large)",
                     HttpMethod.GET,
                     new HttpEntity<>(userInfoHeaders),
                     String.class
@@ -253,6 +282,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return tokenParams;
     }
 
+    private MultiValueMap<String, String> getFacebookTokenParams(String code) {
+        MultiValueMap<String, String> tokenParams = new LinkedMultiValueMap<>();
+        tokenParams.add("client_id", facebookClientId);
+        tokenParams.add("client_secret", facebookClientSecret);
+        tokenParams.add("redirect_uri", facebookRedirectUri);
+        tokenParams.add("code", code);
+        return tokenParams;
+    }
+
     private void validateTokenResponse(Map<String, Object> tokenMap) {
         if (tokenMap == null || !tokenMap.containsKey("access_token")) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
@@ -260,30 +298,60 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public AuthenticationResponse loginSocial(LoginSocialRequest request) throws Exception {
-        var userAccountId = userRepository.findByGoogleAccountId(request.googleAccountId());
+    public AuthenticationResponse loginSocial(LoginSocialRequest request, String provider) throws Exception {
+        if (request.googleAccountId() == null && request.facebookAccountId() == null) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+        if (provider.toLowerCase().equals("google")) {
+            var userAccountId = userRepository.findByGoogleAccountId(request.googleAccountId());
 
-        if (userAccountId.isPresent()) {
-            var user = userAccountId.get();
+            if (userAccountId.isPresent()) {
+                var user = userAccountId.get();
+                return getAuthenticationResponse(user);
+            }
+            var optionalUser = userRepository.findByEmail(request.email());
+            if (optionalUser.isPresent()) {
+                var user = optionalUser.get();
+                user.setGoogleAccountId(request.googleAccountId());
+                user.setAvatar(request.avatar());
+                user.setName(request.name());
+                userRepository.save(user);
+                return getAuthenticationResponse(user);
+            }
+            var user = userMapper.toEntity(request);
+            user.setPassword(null);
+            user.setRoles(List.of("USER"));
+            user.setNumOfTrips(0);
+            user.setRating(0.0);
+            user.setActive(true);
+            user = userRepository.save(user);
             return getAuthenticationResponse(user);
         }
-        var optionalUser = userRepository.findByEmail(request.email());
-        if (optionalUser.isPresent()) {
-            var user = optionalUser.get();
-            user.setGoogleAccountId(request.googleAccountId());
-            user.setAvatar(request.avatar());
-            user.setName(request.name());
-            userRepository.save(user);
+        if (provider.toLowerCase().equals("facebook")) {
+            var userAccountId = userRepository.findByFacebookAccountId(request.facebookAccountId());
+            if (userAccountId.isPresent()) {
+                var user = userAccountId.get();
+                return getAuthenticationResponse(user);
+            }
+            var optionalUser = userRepository.findByEmail(request.email());
+            if (optionalUser.isPresent()) {
+                var user = optionalUser.get();
+                user.setFacebookAccountId(request.facebookAccountId());
+                user.setAvatar(request.avatar());
+                user.setName(request.name());
+                userRepository.save(user);
+                return getAuthenticationResponse(user);
+            }
+            var user = userMapper.toEntity(request);
+            user.setPassword(null);
+            user.setRoles(List.of("USER"));
+            user.setNumOfTrips(0);
+            user.setRating(0.0);
+            user.setActive(true);
+            user = userRepository.save(user);
             return getAuthenticationResponse(user);
         }
-        var user = userMapper.toEntity(request);
-        user.setPassword(null);
-        user.setRoles(List.of("USER"));
-        user.setNumOfTrips(0);
-        user.setRating(0.0);
-        user.setActive(true);
-        user = userRepository.save(user);
-        return getAuthenticationResponse(user);
+        throw new AppException(ErrorCode.UNAUTHENTICATED);
     }
 
     private AuthenticationResponse getAuthenticationResponse(User user) {
