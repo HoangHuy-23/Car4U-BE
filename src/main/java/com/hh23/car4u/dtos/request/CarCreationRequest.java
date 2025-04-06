@@ -19,6 +19,7 @@ public record CarCreationRequest(
         String licensePlate,               // License plate
         String vin,                        // Vehicle Identification Number (VIN)
         FuelType fuelType,                 // Fuel type
+        Double fuelConsumption,              // Fuel consumption (L/100km)
         TransmissionType transmissionType, // Transmission type (automatic, manual)
         CarType type,                      // Car type (SUV, sedan, etc.)
         Integer numOfSeats,                // Number of seats

@@ -17,6 +17,7 @@ public record CarResponse(
         String licensePlate,
         String vin,
         FuelType fuelType,
+        Double fuelConsumption,
         TransmissionType transmissionType,
         CarType type,
         Integer numOfSeats,

@@ -32,6 +32,7 @@ public class Car {
     String licensePlate;
     String vin; // Vehicle Identification Number
     FuelType fuelType;
+    Double fuelConsumption; // L/100km
     TransmissionType transmissionType;
     CarType type;
     Integer numOfSeats;

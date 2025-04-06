@@ -1,8 +1,14 @@
 package com.hh23.car4u.controllers;
 
 import com.hh23.car4u.dtos.ApiResponse;
+import com.hh23.car4u.dtos.PageResponse;
 import com.hh23.car4u.dtos.request.CarCreationRequest;
+import com.hh23.car4u.dtos.request.CarFilterRequest;
 import com.hh23.car4u.dtos.response.CarResponse;
+import com.hh23.car4u.entities.enums.CarFeature;
+import com.hh23.car4u.entities.enums.CarType;
+import com.hh23.car4u.entities.enums.FuelType;
+import com.hh23.car4u.entities.enums.TransmissionType;
 import com.hh23.car4u.services.CarService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -39,4 +45,54 @@ public class CarController {
                 .data(response)
                 .build();
     }
+
+    @GetMapping("/filter")
+    ApiResponse<PageResponse<CarResponse>> filterCars(
+            @RequestParam(defaultValue = "1") Integer pageNo,
+            @RequestParam() String location,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) String model,
+            @RequestParam(required = false) String color,
+            @RequestParam(required = false) String year,
+            @RequestParam(required = false) String fuelType,
+            @RequestParam(required = false) String transmissionType,
+            @RequestParam(required = false) Double fuelConsumption,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) Integer minSeats,
+            @RequestParam(required = false) Integer maxSeats,
+            @RequestParam(required = false) Double rating,
+            @RequestParam(required = false) List<CarFeature> features,
+            @RequestParam(required = false) Boolean deliveryAvailable,
+            @RequestParam(required = false) String sortBy
+            ) {
+        log.info("Filter cars with request: pageNo={}, location={}, brand={}, model={}, color={}, year={}, fuelType={}, transmissionType={}, fuelConsumption={}, type={}, minPrice={}, maxPrice={}, minSeats={}, maxSeats={}, rating={}, features={}, deliveryAvailable={}, sortBy={}",
+                pageNo, location, brand, model, color, year, fuelType, transmissionType, fuelConsumption, type, minPrice, maxPrice, minSeats, maxSeats, rating, features, deliveryAvailable, sortBy);
+        var request = CarFilterRequest.builder()
+                .brand(brand)
+                .model(model)
+                .color(color)
+                .year(year)
+                .fuelType(fuelType != null ? FuelType.valueOf(fuelType) : null)
+                .fuelConsumption(fuelConsumption)
+                .transmissionType(transmissionType != null ? TransmissionType.valueOf(transmissionType) : null)
+                .type(type != null ? CarType.valueOf(type) : null)
+                .minPrice(minPrice)
+                .maxPrice(maxPrice)
+                .minSeats(minSeats)
+                .maxSeats(maxSeats)
+                .rating(rating)
+                .features(features)
+                .deliveryAvailable(deliveryAvailable)
+                .location(location)
+                .sortBy(sortBy)
+                .build();
+        var response = carService.filterCar(pageNo, request);
+        return ApiResponse.<PageResponse<CarResponse>>builder()
+                .message("Filter cars successfully")
+                .data(response)
+                .build();
+    }
+
 }
