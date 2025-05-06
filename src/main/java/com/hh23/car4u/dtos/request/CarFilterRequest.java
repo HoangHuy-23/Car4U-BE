@@ -23,7 +23,7 @@ public record CarFilterRequest(
         Integer minSeats,
         Integer maxSeats,
         Double rating,
-        List<CarFeature> features,
+        String features,
         String location,
         Boolean deliveryAvailable,
         String sortBy

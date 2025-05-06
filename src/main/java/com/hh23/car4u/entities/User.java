@@ -35,6 +35,7 @@ public class User {
     boolean isActive;
     String googleAccountId;
     String facebookAccountId;
+    DriverLicense driverLicense;
     @CreatedDate
     @Setter(AccessLevel.NONE)
     Instant createdAt;

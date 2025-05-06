@@ -5,6 +5,7 @@ import com.hh23.car4u.dtos.PageResponse;
 import com.hh23.car4u.dtos.request.CarCreationRequest;
 import com.hh23.car4u.dtos.request.CarFilterRequest;
 import com.hh23.car4u.dtos.response.CarResponse;
+import com.hh23.car4u.dtos.response.UserResponse;
 import com.hh23.car4u.entities.enums.CarFeature;
 import com.hh23.car4u.entities.enums.CarType;
 import com.hh23.car4u.entities.enums.FuelType;
@@ -46,6 +47,26 @@ public class CarController {
                 .build();
     }
 
+    @GetMapping("/external/{carId}")
+    ApiResponse<CarResponse> getCar(@PathVariable String carId) {
+        log.info("Get car with id: {}", carId);
+        var response = carService.getCar(carId);
+        return ApiResponse.<CarResponse>builder()
+                .message("Get car successfully")
+                .data(response)
+                .build();
+    }
+
+    @GetMapping("/external/{carId}/owner")
+    ApiResponse<UserResponse> getCarOwner(@PathVariable String carId) {
+        log.info("Get car owner with id: {}", carId);
+        var response = carService.getCarOwner(carId);
+        return ApiResponse.<UserResponse>builder()
+                .message("Get car owner successfully")
+                .data(response)
+                .build();
+    }
+
     @GetMapping("/filter")
     ApiResponse<PageResponse<CarResponse>> filterCars(
             @RequestParam(defaultValue = "1") Integer pageNo,
@@ -63,7 +84,7 @@ public class CarController {
             @RequestParam(required = false) Integer minSeats,
             @RequestParam(required = false) Integer maxSeats,
             @RequestParam(required = false) Double rating,
-            @RequestParam(required = false) List<CarFeature> features,
+            @RequestParam(required = false) String features,
             @RequestParam(required = false) Boolean deliveryAvailable,
             @RequestParam(required = false) String sortBy
             ) {

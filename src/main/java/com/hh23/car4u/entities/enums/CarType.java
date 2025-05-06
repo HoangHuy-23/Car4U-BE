@@ -5,13 +5,11 @@ import lombok.Getter;
 @Getter
 public enum CarType {
     SEDAN("Sedan"),
+    MPV("MPV"),
+    CUV("CUV"),
     SUV("SUV"),
     HATCHBACK("Hatchback"),
-    COUPE("Coupe"),
-    CONVERTIBLE("Convertible"),
     PICKUP("Pickup"),
-    VAN("Van"),
-    WAGON("Wagon"),
     SPORTS_CAR("Sports Car"),
     LUXURY("Luxury");
 

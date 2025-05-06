@@ -4,19 +4,24 @@ import lombok.Getter;
 
 @Getter
 public enum CarFeature {
-    GPS("GPS Navigation"),
+    MAP("Map"),
     BLUETOOTH("Bluetooth"),
     CAMERA_360("360 Camera"),
-    LATERAL_CAMERA("Lateral Camera"),
-    DASH_CAM("Dash Camera"),
-    REAR_CAMERA("Rear Camera"),
-    TIRE_SENSORS("Tire Sensors"),
-    COLLISION_SENSORS("Collision Sensors"),
-    SPEED_ALERT("Speed Alert"),
+    SIDE_CAMERA("Side Camera"),
+    DASH_CAM("Dash Cam"),
+    REVERSING_CAMERA("Reversing Camera"),
+    TIRE_PRESSURE_SENSOR("Tire Pressure Sensor"),
+    COLLISION_SENSOR("Collision Sensor"),
+    SPEED_WARNING("Speed Warning"),
+    SUNROOF("Sunroof"),
+    GPS_NAVIGATION("GPS Navigation"),
+    CHILD_SEAT("Child Seat"),
     USB_PORT("USB Port"),
     SPARE_TIRE("Spare Tire"),
     DVD_SCREEN("DVD Screen"),
-    AIRBAG("Safety Airbags");
+    PICKUP_TRUCK_BED_COVER("Pickup Truck Bed Cover"),
+    ETC("ETC (Electronic Toll Collection)"),
+    AIRBAG("Airbag");
 
     private final String description;
 

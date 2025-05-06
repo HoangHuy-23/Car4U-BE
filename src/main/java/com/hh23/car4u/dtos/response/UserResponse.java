@@ -1,6 +1,7 @@
 package com.hh23.car4u.dtos.response;
 
 
+import com.hh23.car4u.entities.DriverLicense;
 import lombok.Builder;
 
 import java.time.Instant;
@@ -14,11 +15,15 @@ public record UserResponse(
         LocalDate dob,
         String email,
         String phone,
+        String gender,
         List<String> roles,
         Double rating,
         String avatar,
         Integer numOfTrips,
         boolean isActive,
+        String googleAccountId,
+        String facebookAccountId,
+        DriverLicense driverLicense,
         Instant createdAt,
         Instant lastModifiedAt
 ) {

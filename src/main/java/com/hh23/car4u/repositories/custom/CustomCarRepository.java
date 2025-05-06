@@ -75,8 +75,16 @@ public class CustomCarRepository {
             criteriaList.add(Criteria.where("deliveryAvailable").is(request.deliveryAvailable()));
         }
 //      feature
-        if (request.features() != null && !request.features().isEmpty()) {
-            criteriaList.add(Criteria.where("features").in(request.features()));
+        if (request.features() != null) {
+            // Split the features string into a list of features
+            String[] featuresArray = request.features().split(",");
+            List<String> featuresList = new ArrayList<>();
+            for (String feature : featuresArray) {
+                featuresList.add(feature.trim());
+            }
+            // Add the criteria for features
+            // Use Criteria.where("features").in(featuresList) to match any of the features
+            criteriaList.add(Criteria.where("features").in(featuresList));
         }
 
         if (!criteriaList.isEmpty()) {
