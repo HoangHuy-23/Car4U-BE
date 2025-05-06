@@ -25,6 +25,9 @@ public class SecurityConfig {
             "/auth/register",
             "/auth/social-login",
             "/auth/social-login/callback",
+            "/cars/filter",
+            "/cars/external/**",
+            "/cars/owners/**",
     };
 
     private final CustomJwtDecoder jwtDecoder;
