@@ -1,22 +1,22 @@
 # 🚗 Car4U Backend
 
-Car4U là nền tảng thuê xe tự lái giúp kết nối giữa chủ xe và người thuê xe. Đây là repository backend (Java + Spring Boot) của dự án, chịu trách nhiệm xử lý API, xác thực người dùng, quản lý dữ liệu xe, lịch thuê xe, thanh toán, và nhiều tính năng khác.
+**Car4U** is a self-driving car rental platform that connects car owners with renters. This is the backend repository, built with **Java + Spring Boot**, responsible for handling APIs, user authentication, car data management, rental scheduling, payment integration, and various other services.
 
-## 🛠️ Công nghệ sử dụng
+## 🛠️ Technologies Used
 
 - **Java 17**
 - **Spring Boot 3.x**
-- **Spring Security + JWT + OAuth2**
-- **MongoDB** – cơ sở dữ liệu NoSQL
-- **VNPAY** – tích hợp thanh toán
-- **Docker** – đóng gói và triển khai
-- **Maven** – quản lý project
-- **AWS** - s3 + cloudfront
-- **Gemini** - chat bot AI
-- **Swagger** 
+- **Spring Security + JWT + OAuth2** – Authentication & Authorization
+- **MongoDB** – NoSQL Database
+- **VNPAY** – Integrated Payment Gateway
+- **Docker** – Containerization and deployment
+- **Maven** – Build & Dependency Management
+- **AWS** – S3 for file storage, CloudFront for CDN
+- **Gemini API** – Integrated AI chatbot assistant
+- **Swagger** – API documentation
 
-## 🧪 API tài liệu
-Tài liệu Swagger có sẵn tại:
+## 🧪 API Documentation
+Swagger UI is available at:
 ```
 http://localhost:8080/swagger-ui/index.html
 
