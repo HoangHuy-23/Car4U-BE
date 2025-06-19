@@ -10,6 +10,7 @@ import java.util.List;
 
 @Builder
 public record CarFilterRequest(
+//        String keyword,
         String brand,
         String model,
         String color,
@@ -27,5 +28,9 @@ public record CarFilterRequest(
         String location,
         Boolean deliveryAvailable,
         String sortBy
+//        Integer page,
+//        Integer size,
+//        String startDate,                 // Thêm để tìm xe rảnh
+//        String endDate
 ) {
 }

@@ -23,4 +23,7 @@ public interface CarService {
     PageResponse<CarResponse> filterCar(Integer pageNo, CarFilterRequest request);
 
     UserResponse getCarOwner(String carId);
+
+    CarResponse disableCar(String carId);
+    CarResponse enableCar(String carId);
 }

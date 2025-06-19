@@ -36,17 +36,39 @@ spring:
 
 server:
   port: 8080
-  servlet:
-    context-path: /api/v1
+#  servlet:
+#    context-path: /api/v1
 
 app:
   mongodb:
     uri: ${MONGO_URL}
   jwt:
     signer-key: ${JWT_SIGNER_KEY}
-
+  payment:
+    vnPay:
+      url: ${PAY_URL}
+      tmnCode: ${TMN_CODE}
+      secretKey: ${SECRET_KEY}
+      returnUrl: ${RETURN_URL}
+      version: ${VERSION}
+      command: ${COMMAND}
+      orderType: ${ORDER_TYPE}
+  aws:
+    access-key-id: ${AWS_ACCESS_KEY_ID}
+    secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+    region: ${AWS_REGION}
+    s3-bucket-name: ${AWS_S3_BUCKET_NAME}
+    cloudfront-url: ${AWS_CLOUDFRONT_URL}
+  gemini:
+    api-key: ${GEMINI_AI_KEY}
 
 logging:
   level:
     org.springframework.security: DEBUG
     org.springframework.web.client: DEBUG
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

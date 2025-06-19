@@ -2,6 +2,7 @@ package com.hh23.car4u.dtos.response;
 
 
 import com.hh23.car4u.entities.DriverLicense;
+import com.hh23.car4u.entities.UserAddress;
 import lombok.Builder;
 
 import java.time.Instant;
@@ -24,6 +25,9 @@ public record UserResponse(
         String googleAccountId,
         String facebookAccountId,
         DriverLicense driverLicense,
+        List<UserAddress> addresses, // Address of the user
+        List<String> myCars, // List of car IDs owned by the user
+        List<String> myFavorites, // List of favorite car IDs
         Instant createdAt,
         Instant lastModifiedAt
 ) {

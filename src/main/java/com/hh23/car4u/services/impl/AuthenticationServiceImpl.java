@@ -14,6 +14,7 @@ import com.hh23.car4u.mappers.UserMapper;
 import com.hh23.car4u.repositories.RefreshTokenRepository;
 import com.hh23.car4u.repositories.UserRepository;
 import com.hh23.car4u.services.AuthenticationService;
+import com.hh23.car4u.utils.ObjectIdUtil;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -102,17 +104,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var accessToken = generateAccessToken(user);
         var newRefreshToken = generateRefreshToken(user);
 
-        var refreshToken = refreshTokenRepository.findByUserId(user.getId());
+        String userId = ObjectIdUtil.toStringId(user.getId());
+        var refreshToken = refreshTokenRepository.findByUserId(userId);
         if (refreshToken.isEmpty()) {
             refreshTokenRepository.save(RefreshToken.builder()
-                        .userId(user.getId())
+                        .userId(userId)
                         .token(newRefreshToken)
                         .expiresAt(Instant.now().plus(7, ChronoUnit.DAYS))
                 .build());
         } else {
             refreshTokenRepository.save(RefreshToken.builder()
                     .id(refreshToken.get().getId())
-                    .userId(user.getId())
+                    .userId(userId)
                     .token(newRefreshToken)
                     .expiresAt(Instant.now().plus(7, ChronoUnit.DAYS))
                     .build());
@@ -141,8 +144,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         user = userRepository.save(user);
         var refreshToken = generateRefreshToken(user);
+        String userId = ObjectIdUtil.toStringId(user.getId());
         refreshTokenRepository.save(RefreshToken.builder()
-                        .userId(user.getId())
+                        .userId(userId)
                         .token(refreshToken)
                         .expiresAt(Instant.now().plus(7, ChronoUnit.DAYS))
                 .build());
@@ -164,7 +168,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public AuthenticationResponse refreshToken(RefreshTokenRequest request) throws Exception {
         var signedJWT = verifyToken(request.refreshToken());
         String userId = signedJWT.getJWTClaimsSet().getSubject();
-        var user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        ObjectId objectUserId = ObjectIdUtil.toObjectId(userId);
+        var user = userRepository.findById(objectUserId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         var refreshToken = refreshTokenRepository.findByUserId(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
         if (!refreshToken.getToken().equals(request.refreshToken())) {
@@ -176,9 +181,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var newAccessToken = generateAccessToken(user);
         var newRefreshToken = generateRefreshToken(user);
 
+        String stringUserId = ObjectIdUtil.toStringId(user.getId());
         refreshTokenRepository.save(RefreshToken.builder()
                         .id(refreshToken.getId())
-                        .userId(user.getId())
+                        .userId(stringUserId)
                         .token(newRefreshToken)
                         .expiresAt(Instant.now().plus(7, ChronoUnit.DAYS))
                 .build());
@@ -197,7 +203,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         String userId = context.getAuthentication().getName();
-        var user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        ObjectId objectUserId = ObjectIdUtil.toObjectId(userId);
+        var user = userRepository.findById(objectUserId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         return userMapper.toResponse(user);
     }
 
@@ -357,8 +364,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private AuthenticationResponse getAuthenticationResponse(User user) {
         var accessToken = generateAccessToken(user);
         var refreshToken = generateRefreshToken(user);
+        String stringUserId = ObjectIdUtil.toStringId(user.getId());
         refreshTokenRepository.save(RefreshToken.builder()
-                        .userId(user.getId())
+                        .userId(stringUserId)
                         .token(refreshToken)
                         .expiresAt(Instant.now().plus(7, ChronoUnit.DAYS))
                 .build());
@@ -373,8 +381,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Date issuedAt = new Date();
         Date expiresAt = new Date(Instant.ofEpochMilli(issuedAt.getTime()).plus(1, ChronoUnit.DAYS).toEpochMilli());
 
+        String stringUserId = ObjectIdUtil.toStringId(user.getId());
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getId())
+                .subject(stringUserId)
                 .issuer("car4u")
                 .issueTime(issuedAt)
                 .expirationTime(expiresAt)
@@ -402,8 +411,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Date issuedAt = new Date();
         Date expiresAt = new Date(Instant.ofEpochMilli(issuedAt.getTime()).plus(7, ChronoUnit.DAYS).toEpochMilli());
 
+        String stringUserId = ObjectIdUtil.toStringId(user.getId());
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getId())
+                .subject(stringUserId)
                 .issuer("car4u")
                 .issueTime(issuedAt)
                 .expirationTime(expiresAt)
