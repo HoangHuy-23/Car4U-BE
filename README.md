@@ -13,4 +13,11 @@ Car4U là nền tảng thuê xe tự lái giúp kết nối giữa chủ xe và 
 - **Maven** – quản lý project
 - **AWS** - s3 + cloudfront
 - **Gemini** - chat bot AI
+- **Swagger** 
 
+## 🧪 API tài liệu
+Tài liệu Swagger có sẵn tại:
+```
+http://localhost:8080/swagger-ui/index.html
+
+```
