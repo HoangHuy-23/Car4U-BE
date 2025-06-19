@@ -7,6 +7,7 @@ import com.hh23.car4u.dtos.response.CarResponse;
 import com.hh23.car4u.dtos.response.UserResponse;
 import com.hh23.car4u.entities.Car;
 import com.hh23.car4u.entities.User;
+import com.hh23.car4u.entities.enums.CarStatus;
 import com.hh23.car4u.exception.AppException;
 import com.hh23.car4u.exception.ErrorCode;
 import com.hh23.car4u.mappers.CarMapper;
@@ -15,12 +16,15 @@ import com.hh23.car4u.repositories.CarRepository;
 import com.hh23.car4u.repositories.UserRepository;
 import com.hh23.car4u.repositories.custom.CustomCarRepository;
 import com.hh23.car4u.services.CarService;
+import com.hh23.car4u.utils.ObjectIdUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,17 +45,20 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public CarResponse addCar(CarCreationRequest request, String userId) {
-        User user = userRepository.findById(userId)
+        ObjectId objectId = ObjectIdUtil.toObjectId(userId);
+        User user = userRepository.findById(objectId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         Car car = carMapper.toEntity(request);
-        car.setOwnerId(user.getId());
+        String carId = ObjectIdUtil.toStringId(car.getId());
+        car.setOwnerId(userId);
         car = carRepository.save(car);
         return carMapper.toResponse(car);
     }
 
     @Override
     public void removeCar(String carId) {
-        carRepository.deleteById(carId);
+        ObjectId objectId = ObjectIdUtil.toObjectId(carId);
+        carRepository.deleteById(objectId);
     }
 
     @Override
@@ -61,9 +68,10 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public CarResponse getCar(String carId) {
-        return carRepository.findById(carId)
+        ObjectId objectId = ObjectIdUtil.toObjectId(carId);
+        return carRepository.findById(objectId)
                 .map(carMapper::toResponse)
-                .orElseThrow(() -> new RuntimeException("Car not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.CAR_NOT_FOUND));
     }
 
     @Override
@@ -93,12 +101,56 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public UserResponse getCarOwner(String carId) {
-        Car car = carRepository.findById(carId)
-                .orElseThrow(() -> new RuntimeException("Car not found"));
-        Optional<User> user = userRepository.findById(car.getOwnerId());
+        ObjectId ObjectCarId = ObjectIdUtil.toObjectId(carId);
+        Car car = carRepository.findById(ObjectCarId)
+                .orElseThrow(() -> new AppException(ErrorCode.CAR_NOT_FOUND));
+        Optional<User> user = userRepository.findById(ObjectIdUtil.toObjectId(car.getOwnerId()));
+        if (user.isEmpty()) {
+            throw new AppException(ErrorCode.USER_NOT_FOUND);
+        }
         if (user.isPresent()) {
             return userMapper.toResponse(user.get());
         }
         return null;
+    }
+
+    @Override
+    public CarResponse disableCar(String carId) {
+        ObjectId objectId = ObjectIdUtil.toObjectId(carId);
+        Car car = carRepository.findById(objectId)
+                .orElseThrow(() -> new AppException(ErrorCode.CAR_NOT_FOUND));
+        var context = SecurityContextHolder.getContext();
+        if (context.getAuthentication() == null || !context.getAuthentication().isAuthenticated()) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+        String userId = context.getAuthentication().getName();
+        ObjectId objectUserId = ObjectIdUtil.toObjectId(userId);
+        var user = userRepository.findById(objectUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        if (!car.getOwnerId().equals(userId)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        car.setStatus(CarStatus.UNAVAILABLE);
+        return carMapper.toResponse(carRepository.save(car));
+    }
+
+    @Override
+    public CarResponse enableCar(String carId) {
+        ObjectId objectId = ObjectIdUtil.toObjectId(carId);
+        Car car = carRepository.findById(objectId)
+                .orElseThrow(() -> new AppException(ErrorCode.CAR_NOT_FOUND));
+        var context = SecurityContextHolder.getContext();
+        if (context.getAuthentication() == null || !context.getAuthentication().isAuthenticated()) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+        String userId = context.getAuthentication().getName();
+        ObjectId objectUserId = ObjectIdUtil.toObjectId(userId);
+        var user = userRepository.findById(objectUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        if (!car.getOwnerId().equals(userId)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        car.setStatus(CarStatus.AVAILABLE);
+        return carMapper.toResponse(carRepository.save(car));
     }
 }

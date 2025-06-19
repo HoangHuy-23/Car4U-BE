@@ -18,6 +18,7 @@ import org.springframework.web.cors.CorsConfiguration;
 @EnableWebSecurity
 public class SecurityConfig {
     private static final String[] PUBLIC_URLS = {
+            // Auth endpoints
             "/auth/login",
             "/auth/introspect",
             "/auth/refresh-token",
@@ -25,9 +26,21 @@ public class SecurityConfig {
             "/auth/register",
             "/auth/social-login",
             "/auth/social-login/callback",
+
+            // Car endpoints
             "/cars/filter",
             "/cars/external/**",
             "/cars/owners/**",
+
+            // Chatbot endpoints
+            "/chatbot/**",
+
+            // Swagger endpoints
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/swagger-resources/**",
+            "/webjars/**"
     };
 
     private final CustomJwtDecoder jwtDecoder;
@@ -41,7 +54,6 @@ public class SecurityConfig {
         http.authorizeHttpRequests(authorizeRequests ->
             authorizeRequests
                     .requestMatchers(PUBLIC_URLS).permitAll()
-                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
                     .anyRequest().authenticated());
         http.oauth2ResourceServer(oauth2ResourceServer ->
             oauth2ResourceServer.jwt(jwt -> jwt.decoder(jwtDecoder)

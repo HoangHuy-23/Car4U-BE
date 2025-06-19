@@ -10,6 +10,15 @@ public enum ErrorCode {
     USER_EXISTED("Username already exists", HttpStatus.BAD_REQUEST),
     UNAUTHENTICATED("Unauthenticated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED("You do not have permission", HttpStatus.FORBIDDEN),
+    INVALID_CREDENTIALS("Invalid credentials", HttpStatus.UNAUTHORIZED),
+    INVALID_ID_FORMAT("Invalid ID format", HttpStatus.BAD_REQUEST),
+//    car
+    CAR_NOT_FOUND("Car not found", HttpStatus.NOT_FOUND),
+//  user
+    ADDRESS_NOT_FOUND("Address not found", HttpStatus.NOT_FOUND),
+    INVALID_PHONE_NUMBER("Invalid phone number format", HttpStatus.BAD_REQUEST),
+    PHONE_ALREADY_EXISTS("Phone number already exists", HttpStatus.BAD_REQUEST),
+    RENTAL_CONTACT_NOT_FOUND("Rental contact not found", HttpStatus.NOT_FOUND)
     ;
 
     ErrorCode(String message, HttpStatus statusCode) {

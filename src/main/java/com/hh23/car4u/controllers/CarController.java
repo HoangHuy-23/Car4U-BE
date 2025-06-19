@@ -116,4 +116,23 @@ public class CarController {
                 .build();
     }
 
+    @PutMapping("/{carId}/disable")
+    ApiResponse<CarResponse> disableCar(@PathVariable String carId) {
+        log.info("Disable car with id: {}", carId);
+        var response = carService.disableCar(carId);
+        return ApiResponse.<CarResponse>builder()
+                .message("Disable car successfully")
+                .data(response)
+                .build();
+    }
+
+    @PutMapping("/{carId}/enable")
+    ApiResponse<CarResponse> enableCar(@PathVariable String carId) {
+        log.info("Enable car with id: {}", carId);
+        var response = carService.enableCar(carId);
+        return ApiResponse.<CarResponse>builder()
+                .message("Enable car successfully")
+                .data(response)
+                .build();
+    }
 }

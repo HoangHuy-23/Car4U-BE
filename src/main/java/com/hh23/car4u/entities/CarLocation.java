@@ -14,6 +14,9 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CarLocation {
     String fullAddress;         // VD: 123 Nguyễn Văn A, P.Bến Nghé
+    String no;                  // VD: 123
+    String street;              // VD: Nguyễn Văn A
+    String ward;               // VD: Phường Bến Nghé
     String district;            // VD: Quận 1
     String city;                // VD: Hồ Chí Minh
     List<Double> coordinates;   // [lng, lat]

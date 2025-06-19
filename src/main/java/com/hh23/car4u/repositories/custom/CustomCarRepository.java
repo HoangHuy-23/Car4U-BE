@@ -87,9 +87,12 @@ public class CustomCarRepository {
             criteriaList.add(Criteria.where("features").in(featuresList));
         }
 
+//        criteriaList.add(Criteria.where("isDeleted").is(false)); // Exclude deleted cars
+//        criteriaList.add(Criteria.where("isVerified").is(true)); // Only include verified cars
+        criteriaList.add(Criteria.where("status").is("AVAILABLE")); // Only include available cars
+
         if (!criteriaList.isEmpty()) {
             query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
-
         }
         //      sort
         if (request.sortBy() != null) {
